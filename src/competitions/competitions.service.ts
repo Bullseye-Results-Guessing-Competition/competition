@@ -74,7 +74,7 @@ export class CompetitionsService {
     }
   }
 
-  async findById(competitionId: number) {
+  async findById(competitionId: number) : Promise<CompetitionEntity> {
     return await this.competitionRepository.findOne({id: competitionId})
   }
 

@@ -9,7 +9,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { CompetitionsService } from './competitions.service';
-import { TokenGuard } from 'src/guards/token/token.gaurd';
+import { TokenGuard } from 'src/guards/token/token.guard';
 import { CompetitionEntity } from './competition.entity';
 import { AddCompetitionRequestDto } from './dto/addCompetitionRequest.dto';
 import { Roles } from 'src/guards/roles/roles.decorator';
@@ -29,6 +29,12 @@ export class CompetitionsController {
   @Get()
   getCompetitions(): Promise<CompetitionEntity[]> {
     return this.competitionsService.getAllCompetitions();
+  }
+
+  @Roles('User', 'Admin')
+  @Get(':competitionId')
+  getCompetition(@Param('competitionId') competitionId : number ): Promise<CompetitionEntity> {
+    return this.competitionsService.findById(competitionId);
   }
 
   @Roles('Admin')

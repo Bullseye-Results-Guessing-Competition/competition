@@ -4,32 +4,34 @@ import { AddGameRequestDto } from "./dto/addGameRequest.dto";
 import { GameEntity } from "./game.entity";
 import { CompetitionsService } from "src/competitions/competitions.service";
 import { AddGameResponseDto } from "./dto/addGameResponse.dto";
+import { TeamsService } from "src/teams/teams.service";
 
 @Injectable()
 export class GamesService {
 
-  constructor(@Inject(GamesRepository) private gamesRepository : GamesRepository, @Inject(CompetitionsService) private competitionsService : CompetitionsService){
+  constructor(  @Inject(GamesRepository) private gamesRepository : GamesRepository,
+                @Inject(CompetitionsService) private competitionsService : CompetitionsService,
+                @Inject(TeamsService) private teamsService : TeamsService){
   }
 
-  async addGames(addGameRequestDto: AddGameRequestDto): Promise<AddGameResponseDto> {    
-    if(await !this.competitionsService.findById(addGameRequestDto.competitionId)){
-
+  async addGame( competitionId : number, addGameRequestDto: AddGameRequestDto): Promise<AddGameResponseDto> {    
+    if(!(await this.competitionsService.findById(competitionId))){
       throw new BadRequestException();
     }
 
-    // if(!areTheTeamsInTheCompetition()){
-    //   throw new BadRequestException();
-    // }
+    if(!await this.areTheTeamsInTheCompetition(addGameRequestDto.teamAId, addGameRequestDto.teamBId, competitionId)){
+      throw new BadRequestException();
+    }
 
 
-    if(await this.isOneOfTheTeamsAreAlreadyExistInTheFixture(addGameRequestDto.teamAId, addGameRequestDto.teamBId, addGameRequestDto.fixture, addGameRequestDto.competitionId)){
+    if(await this.isOneOfTheTeamsAreAlreadyExistInTheFixture(addGameRequestDto.teamAId, addGameRequestDto.teamBId, addGameRequestDto.fixture, competitionId)){
 
       throw new BadRequestException();
     }
 
 
     const newGameEntity = new GameEntity();
-    newGameEntity.competition = addGameRequestDto.competitionId;
+    newGameEntity.competition = competitionId;
     newGameEntity.fixture = addGameRequestDto.fixture;
     newGameEntity.teamAId = addGameRequestDto.teamAId;
     newGameEntity.teamBId = addGameRequestDto.teamBId;
@@ -55,6 +57,24 @@ export class GamesService {
     }
 
     return  gamesArrayInFixture.some(game => game.teamAId === teamAId || game.teamBId === teamBId);
+  }
+
+  async areTheTeamsInTheCompetition(teamAId : number, teamBId : number, competitionId : number) : Promise<boolean>{
+    const teamAEntity = await this.teamsService.findById(teamAId);
+    const teamBEntity = await this.teamsService.findById(teamBId);
+
+    console.log(teamAEntity);
+    console.log(teamAEntity.competition);
+
+    console.log(competitionId);
+    console.log(teamBEntity);
+
+    console.log(teamAEntity && teamAEntity.competition === competitionId);
+
+    console.log(teamBEntity && teamBEntity.competition === competitionId);
+    
+    return false;
+    return teamAEntity && teamAEntity.competition === competitionId && teamBEntity && teamBEntity.competition === competitionId;
   }
 
 }

@@ -8,7 +8,7 @@ import { CompetitionsModule } from 'src/competitions/competitions.module';
 
 @Module({
   imports: [HttpModule, TypeOrmModule.forFeature([TeamsRepository]), CompetitionsModule],
-  exports: [],
+  exports: [TeamsService],
   providers: [TeamsService],
   controllers: [TeamsController],
 })

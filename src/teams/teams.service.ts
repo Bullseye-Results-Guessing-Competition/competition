@@ -11,8 +11,10 @@ export class TeamsService{
     constructor(@Inject(TeamsRepository) private teamsRepository : TeamsRepository, @Inject(CompetitionsService) private competitionsService : CompetitionsService){}
 
         
-    async addTeam(competitionId: number, addTeamRequestDto: AddTeamRequestDto) {
-        if(await !this.competitionsService.findById(competitionId)){
+    async addTeam(competitionId: number, addTeamRequestDto: AddTeamRequestDto) : Promise<AddTeamResponseDto> {
+      
+        if(!(await this.competitionsService.findById(competitionId))){
+          
             throw new BadRequestException();
         }
 
@@ -25,13 +27,30 @@ export class TeamsService{
     newTeamEntity.competition = competitionId;
     newTeamEntity.name = addTeamRequestDto.name;
     try{
+      
       const newTeam = await this.teamsRepository.save(newTeamEntity);
       const addTeamResponseDto = new AddTeamResponseDto();
       addTeamResponseDto.name = newTeam.name;
 
       return addTeamResponseDto;
     }catch(err){
+      console.log(err);
+
       throw new InternalServerErrorException();
     }
+  }
+
+  
+  async getTeamsByCompetition(competitionId : number): Promise<TeamEntity[]> {
+
+    if(!(await this.competitionsService.findById(competitionId))){
+      throw new BadRequestException();
     }
+
+    return await this.teamsRepository.find({competition: competitionId});
+  }
+
+  async findById(teamId: number) : Promise<TeamEntity> {
+    return await this.teamsRepository.findOne({id: teamId})
+  }
 }

@@ -1,6 +1,6 @@
-import { Controller, UseGuards, Post, Body } from "@nestjs/common";
+import { Controller, UseGuards, Post, Body, Param } from "@nestjs/common";
 import { RolesGuard } from "src/guards/roles/roles.guard";
-import { TokenGuard } from "src/guards/token/token.gaurd";
+import { TokenGuard } from "src/guards/token/token.guard";
 import { GamesService } from "./games.service";
 import { Roles } from "src/guards/roles/roles.decorator";
 import { AddGameRequestDto } from "./dto/addGameRequest.dto";
@@ -15,10 +15,10 @@ export class GamesController {
     constructor(private readonly gamesService: GamesService) {}
 
     @Roles('Admin')
-    @Post()
-    addCompetition(
-      @Body() addGameRequestDto: AddGameRequestDto,
+    @Post(':competitionId')
+    addGame(
+      @Param('competitionId') competitionId : number, @Body() addGameRequestDto: AddGameRequestDto,
     ): Promise<AddGameResponseDto> {
-      return this.gamesService.addGames(addGameRequestDto);
+      return this.gamesService.addGame(competitionId, addGameRequestDto);
     }
 }
